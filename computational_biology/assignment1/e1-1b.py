@@ -14,8 +14,9 @@ while i < len(sequence)-9:
 	i+=1
 
 totalAmountOfPalindromes=0
-for word, amount in listPalindromeWords.items():
-	print('The palindrome subsequence '+word+' occours '+str(amount)+' times.')
-	totalAmountOfPalindromes+=amount
+with open("e1-1b_output.txt", "w") as text_file:
+	for word, amount in listPalindromeWords.items():
+		text_file.write("\nThe palindrome subsequence %s occurs %s" % (word, amount))
+		totalAmountOfPalindromes+=amount
 
-print('The total amount of 9-digit palindrome subsequences found is '+str(totalAmountOfPalindromes)+'.')
+	text_file.write('\nThe total amount of 9-digit palindrome subsequences found is %s.' % (totalAmountOfPalindromes))
