@@ -60,19 +60,19 @@ def alignSequences(s1, s2):
 		elif similarity_matrix[i][j] == similarity_matrix[i-1][j] + gap:
 			alignmentS1 = s1[i] + alignmentS1
 			alignmentS2 = '-' + alignmentS2
-			j-=1
+			i-=1
 		else:
 			alignmentS1 = '-' + alignmentS1
-			alignmentS2 = s2[i] + alignmentS2
-			i-=1
+			alignmentS2 = s2[j] + alignmentS2
+			j-=1
 
 	qtdeAlinhamento = 0
 	for i in range(max(len(alignmentS1), len(alignmentS2))):
 		if alignmentS1[i] == alignmentS2[i]:
 			qtdeAlinhamento+=1
-	#print('Tabela final:',similarity_matrix)
-	print('Sequencia 1 alinhada: ', alignmentS1)
-	print('Sequencia 2 alinhada: ', alignmentS2)
+	print('Tabela final:',similarity_matrix)
+	print('Melhor alinhamento local para a sequencia 1: ', alignmentS1)
+	print('Melhor alinhamento local para a sequencia 2: ', alignmentS2)
 	print('Identidade do alinhamento: ', qtdeAlinhamento)
 
 
