@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import copy
 
 def nothing(x):
 	pass
@@ -12,6 +13,43 @@ def newWindow(name):
 
 def flipHorizontal(img):
 	return img[:,::-1]
+
+def changeBrightness(img, amount, channel):
+	newImg = copy.deepcopy(img)
+
+	for i in range(img.shape[0]):
+		for j in range(img.shape[1]):
+			if img[i][j][channel] + amount > 255:
+				newImg[i][j][channel] = 255
+			elif img[i][j][channel] + amount < 0:
+				newImg[i][j][channel] = 0
+			else:
+				newImg[i][j][channel]+=amount
+
+	return newImg
+
+def changeContrast(img, amount, channel):
+	newImg = copy.deepcopy(img)
+
+	for i in range(img.shape[0]):
+		for j in range(img.shape[1]):
+			if img[i][j][channel] * amount > 255:
+				newImg[i][j][channel] = 255
+			elif img[i][j][channel] * amount < 0:
+				newImg[i][j][channel] = 0
+			else:
+				newImg[i][j][channel]*=amount
+
+	return newImg
+
+def negative(img, channel):
+	newImg = copy.deepcopy(img)
+
+	for i in range(img.shape[0]):
+		for j in range(img.shape[1]):
+				newImg[i][j][channel] = 255 - newImg[i][j][channel]
+
+	return newImg
 
 def grayscale(img):
 		for i in range (img.shape[0]):
@@ -27,7 +65,6 @@ def generateHistogram(img):
 
 	histogramDict = {}
 
-
 	for i in range (img.shape[0]):
 			for j in range (img.shape[1]):
 				pixel = img[i][j]
@@ -40,7 +77,24 @@ def generateHistogram(img):
 		print(histogramDict[key])
 		histogramDict[key] = (histogramDict[key]/float((img.shape[0]*img.shape[1])))*255
 		print(histogramDict[key])
-	return histogramDict
+
+	amountOfPixels = img2.shape[0]*img2.shape[1]
+	imgHistogram = np.full((256,256,3), 255, np.uint8)
+
+	for i in range(imgHistogram.shape[0]):
+		imgHistogram[255-histogramDict[i]:255,i] = (0,0,0)
+
+	return imgHistogram
+
+def generateCumulativeHistogram(imgHistogram):
+	alpha = 255.0/imgHistogram.shape[0]*imgHistogram.shape[1]
+	imgCumulativeHistogram = np.full((256,256,3), 255, np.uint8)
+
+	imgCumulativeHistogram[:,0] = alpha*imgHistogram[:,0]
+	for i in range(1,256):
+		imgCumulativeHistogram[:,i] = imgCumulativeHistogram[:,i-1] + alpha*imgHistogram[:,i]
+
+	return imgCumulativeHistogram
 
 class Trackbar:
 	def __init__(self, name, windowName, start, end):
@@ -62,6 +116,9 @@ class Trackbar:
 		else:
 			return 0
 
+	def getCurrentValue(self):
+		return cv2.getTrackbarPos(self.name,self.windowName)
+
 # Load images
 img = loadImage('test_images/Space_187k.jpg')
 img2 = loadImage('test_images/Space_187k.jpg')
@@ -74,6 +131,13 @@ newWindow('Result Image')
 horizontalTrackbar = Trackbar('Horizontal', 'Original Image',0,1)
 grayscaleTrackbar = Trackbar('Grayscale', 'Original Image',0,1)
 histogramTrackbar = Trackbar('Histogram', 'Result Image',0,1)
+addBrightnessTrackbar = Trackbar('AddBrightness', 'Original Image',0,255)
+subBrightnessTrackbar = Trackbar('SubBrightness', 'Original Image',0,255)
+triggerBrightnessTrackbar = Trackbar('TrigBrightness', 'Original Image',0,1)
+contrastTrackbar = Trackbar('Contrast', 'Original Image',0,255)
+triggerContrastTrackbar = Trackbar('TrigContrast', 'Original Image',0,1)
+negativeTrackbar = Trackbar('Negative', 'Original Image',0,1)
+equalizeTrackbar = Trackbar('Equalize', 'Original Image',0,1)
 
 while(1):
 	cv2.imshow('Original Image',img)
@@ -86,15 +150,39 @@ while(1):
 		grayscale(img2)
 
 	if histogramTrackbar.hasBeenTriggered():
-		histogram = generateHistogram(img2)
-		amountOfPixels = img2.shape[0]*img2.shape[1]
-		imgHistogram = np.zeros((256,256,3), np.uint8)
-
-		for i in range(imgHistogram.shape[0]):
-			imgHistogram[i,0:histogram[i]] = (255,255,255)
-
+		imgHistogram = generateHistogram(img2)
+		
 		newWindow('Histogram')
 		cv2.imshow('Histogram',imgHistogram)
+
+	if triggerBrightnessTrackbar.hasBeenTriggered():
+		brightness = addBrightnessTrackbar.getCurrentValue()
+		brightness-= subBrightnessTrackbar.getCurrentValue()
+		img2 = changeBrightness(img2, brightness, 0)
+		img2 = changeBrightness(img2, brightness, 1)
+		img2 = changeBrightness(img2, brightness, 2)
+
+	if triggerContrastTrackbar.hasBeenTriggered():
+		contrast = contrastTrackbar.getCurrentValue()
+		img2 = changeContrast(img2, contrast, 0)
+		img2 = changeContrast(img2, contrast, 1)
+		img2 = changeContrast(img2, contrast, 2)
+
+	if negativeTrackbar.hasBeenTriggered():
+		img2 = negative(img2, 0)
+		img2 = negative(img2, 1)
+		img2 = negative(img2, 2)
+
+	if equalizeTrackbar.hasBeenTriggered():
+		imgHistogram = generateHistogram(img2)
+		imgCumulativeHistogram = generateCumulativeHistogram(imgHistogram)
+		
+		for i in range (img2.shape[0]):
+			for j in range (img2.shape[1]):
+				img2[i][j] = imgCumulativeHistogram[img2[i][j][0]][255]
+
+		newWindow('CHistogram')
+		cv2.imshow('CHistogram',img2)
 
 	k = cv2.waitKey(1) & 0xFF
 	if k == 27:
