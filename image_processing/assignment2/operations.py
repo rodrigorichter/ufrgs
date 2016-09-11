@@ -64,6 +64,33 @@ def generateHistogram(img):
 		grayscale(img)
 
 	histogramDict = {}
+	for i in range (img.shape[0]):
+			for j in range (img.shape[1]):
+				pixel = img[i][j]
+				if pixel[0] in histogramDict:
+					histogramDict[pixel[0]]+=1
+				else:
+					histogramDict[pixel[0]] = 1
+
+	for i in range(0,256):
+		if i not in histogramDict:
+			histogramDict[i] = 0
+
+	for key, value in histogramDict.items():
+		histogramDict[key] = (histogramDict[key]/float((img.shape[0]*img.shape[1])))*255
+
+	imgHistogram = np.full((256,256,3), 255, np.uint8)
+
+	for i in range(imgHistogram.shape[0]):
+		print(histogramDict[i])
+		imgHistogram[255-histogramDict[i]:255,i] = (0,0,0)
+
+	return imgHistogram
+
+def generateCumulativeHistogram(img):
+	alpha = 255.0/(img.shape[0]*img.shape[1])
+	histogramDict = {}
+	cumHistogramDict = {}
 
 	for i in range (img.shape[0]):
 			for j in range (img.shape[1]):
@@ -73,28 +100,14 @@ def generateHistogram(img):
 				else:
 					histogramDict[pixel[0]] = 1
 
-	for key, value in histogramDict.items():
-		print(histogramDict[key])
-		histogramDict[key] = (histogramDict[key]/float((img.shape[0]*img.shape[1])))*255
-		print(histogramDict[key])
-
-	amountOfPixels = img2.shape[0]*img2.shape[1]
-	imgHistogram = np.full((256,256,3), 255, np.uint8)
-
-	for i in range(imgHistogram.shape[0]):
-		imgHistogram[255-histogramDict[i]:255,i] = (0,0,0)
-
-	return imgHistogram
-
-def generateCumulativeHistogram(imgHistogram):
-	alpha = 255.0/imgHistogram.shape[0]*imgHistogram.shape[1]
-	imgCumulativeHistogram = np.full((256,256,3), 255, np.uint8)
-
-	imgCumulativeHistogram[:,0] = alpha*imgHistogram[:,0]
+	cumHistogramDict[0] = alpha*histogramDict[0]
+	print('alpha: ',alpha)
+	print('hape0',img.shape[0])
+	print('hape1',img.shape[1])
 	for i in range(1,256):
-		imgCumulativeHistogram[:,i] = imgCumulativeHistogram[:,i-1] + alpha*imgHistogram[:,i]
+		cumHistogramDict[i] = cumHistogramDict[i-1] + alpha*histogramDict[i]
 
-	return imgCumulativeHistogram
+	return cumHistogramDict
 
 class Trackbar:
 	def __init__(self, name, windowName, start, end):
@@ -175,14 +188,18 @@ while(1):
 
 	if equalizeTrackbar.hasBeenTriggered():
 		imgHistogram = generateHistogram(img2)
-		imgCumulativeHistogram = generateCumulativeHistogram(imgHistogram)
+		cumulativeHistogram = generateCumulativeHistogram(img2)
 		
 		for i in range (img2.shape[0]):
 			for j in range (img2.shape[1]):
-				img2[i][j] = imgCumulativeHistogram[img2[i][j][0]][255]
+				img2[i][j] = cumulativeHistogram[img2[i][j][0]]
 
-		newWindow('CHistogram')
-		cv2.imshow('CHistogram',img2)
+		newWindow('Histogram')
+		cv2.imshow('Histogram',imgHistogram)
+
+		imgHistogram = generateHistogram(img2)
+		newWindow('Equalized Histogram')
+		cv2.imshow('Equalized Histogram',imgHistogram)
 
 	k = cv2.waitKey(1) & 0xFF
 	if k == 27:
