@@ -28,15 +28,15 @@ def selectImage():
 	if panelA is None or panelB is None or panelC is None:
 		panelA = Label(image=displayedImage)
 		panelA.image = displayedImage
-		panelA.pack(side="left", padx=10, pady=10)
+		panelA.grid(row=7,column=0)
 
 		panelB = Label(image=displayedImage2)
 		panelB.image = displayedImage2
-		panelB.pack(side="bottom", padx=10, pady=10)
+		panelB.grid(row=7,column=1)
 
 		panelC = Label(image=displayedImage3)
 		panelC.image = displayedImage3
-		panelC.pack(side="right", padx=10, pady=10)
+		panelC.grid(row=7,column=2)
 	else:
 		# update the pannels
 		panelA.configure(image=displayedImage)
@@ -99,7 +99,7 @@ def changeBrightness():
 def changeContrast():
 	global img2
 	global img3
-	amount = int(contrastEntry.get())
+	amount = float(contrastEntry.get())
 	newImg = copy.deepcopy(img2)
 
 	for c in range(0, 3):
@@ -158,8 +158,14 @@ def generateHistogram():
 		if i not in histogramDict:
 			histogramDict[i] = 0
 
+	biggestValue=0
+
+	for i in range(0,256):
+		if histogramDict[i] > biggestValue:
+			biggestValue = histogramDict[i]
+	print(biggestValue)
 	for key, value in histogramDict.items():
-		histogramDict[key] = (histogramDict[key]/float((img2.shape[0]*img2.shape[1])))*255
+		histogramDict[key] = (histogramDict[key]/float((img2.shape[0]*img2.shape[1])))*biggestValue
 
 	imgHistogram = np.full((256,256,3), 255, np.uint8)
 
@@ -212,23 +218,101 @@ def zoomOut():
 	sX = int(zoomOutXEntry.get())
 	sY = int(zoomOutYEntry.get())
 	newImg = np.full((img2.shape[0]/sX,img2.shape[1]/sY,3), 255, np.uint8)
-	i = 0
-	#for c in range(0,3):
-	while i < img2.shape[0]-sX:
-		j=0
-		while j < img2.shape[1]-sY:
-			total = 0
-			for x in range(i,i+sX):
-				for y in range(j,j+sY):
-					total+=img2[x,y,0]
-			avg = total/(sX*sY)
-			newImg[i/sX,j/sY,:] = avg
-			j+=sY
-		i+=sX
+	
+	for c in range(0,3):
+		i = 0
+		while i < img2.shape[0]-sX:
+			j=0
+			while j < img2.shape[1]-sY:
+				total = 0
+				for x in range(i,i+sX):
+					for y in range(j,j+sY):
+						total+=img2[x,y,c]
+				avg = total/(sX*sY)
+				newImg[i/sX,j/sY,c] = avg
+				j+=sY
+			i+=sX
 
 	img2 = copy.deepcopy(newImg)
 	updateImagesInScreen()
 
+def zoomIn():
+	global img2
+	global img3
+	newImg = np.full((img2.shape[0]*2,img2.shape[1]*2,3), 255, np.uint8)
+
+	i = 0
+	while i < newImg.shape[0]:
+		j = 0
+		while j < newImg.shape[1]:
+			newImg[i,j,:] = img2[i/2,j/2,:]
+			j+=2
+		i+=2
+
+	i = 0
+	while i < newImg.shape[0]:
+		j = 1
+		while j < newImg.shape[1]-1:
+			newImg[i,j,0] = (int(newImg[i,j+1,0]) + newImg[i,j-1,0])/2
+			newImg[i,j,1] = (int(newImg[i,j+1,1]) + newImg[i,j-1,1])/2
+			newImg[i,j,2] = (int(newImg[i,j+1,2]) + newImg[i,j-1,2])/2
+			j+=2
+		i+=2
+	
+	i = 1
+	while i < newImg.shape[0]-1:
+		j = 0
+		while j < newImg.shape[1]:
+			newImg[i,j,0] = (int(newImg[i+1,j,0]) + newImg[i-1,j,0])/2
+			newImg[i,j,1] = (int(newImg[i+1,j,1]) + newImg[i-1,j,1])/2
+			newImg[i,j,2] = (int(newImg[i+1,j,2]) + newImg[i-1,j,2])/2
+			j+=1
+		i+=2
+
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
+
+def rotateClockWise():
+	global img2
+	global img3
+
+	newImg = np.full((img2.shape[1],img2.shape[0],3), 255, np.uint8)
+
+	for i in range(newImg.shape[0]):
+		for j in range(newImg.shape[1]):
+			newImg[i,j,:] = (img2[j,i,:]+0)
+
+	img2 = copy.deepcopy(newImg)
+	flipHorizontal()
+	updateImagesInScreen()
+
+def rotateAntiClockWise():
+	global img2
+	global img3
+	flipHorizontal()
+	newImg = np.full((img2.shape[1],img2.shape[0],3), 255, np.uint8)
+
+	for i in range(newImg.shape[0]):
+		for j in range(newImg.shape[1]):
+			newImg[i,j,:] = (img2[j,i,:]+0)
+
+	img2 = copy.deepcopy(newImg)
+	
+	updateImagesInScreen()
+
+def convolute():
+	global img2
+	global img3
+
+	newImg = np.full((img2.shape[0],img2.shape[1],3), 255, np.uint8)
+
+	for i in range(1,newImg.shape[0]-1):
+		for j in range(1,newImg.shape[1]-1):
+			print('before',img2[i,j,:])
+			newImg[i,j,:] = img2[i-1,j-1,:]*float(Conv20Entry.get()) + img2[i,j-1,:]*float(Conv21Entry.get()) + img2[i+1,j-1,:]*float(Conv22Entry.get()) + img2[i-1,j,:]*float(Conv10Entry.get()) + img2[i,j,:]*float(Conv11Entry.get()) + img2[i+1,j,:]*float(Conv12Entry.get()) + img2[i-1,j+1,:]*float(Conv00Entry.get()) + img2[i,j+1,:]*float(Conv01Entry.get()) + img2[i+1,j+1,:]*float(Conv02Entry.get())
+			print('after',newImg[i,j,:])
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
 
 root = Tk()
 panelA = None
@@ -237,63 +321,51 @@ img = None
 img2 = None
 img3 = None
 
+ConvolutionLabel = Label(root, text="Convolute").grid(row=0,column=0)
+Conv00Entry = Entry(root, bd =5)
+Conv01Entry = Entry(root, bd =5)
+Conv02Entry = Entry(root, bd =5)
+Conv10Entry = Entry(root, bd =5)
+Conv11Entry = Entry(root, bd =5)
+Conv12Entry = Entry(root, bd =5)
+Conv20Entry = Entry(root, bd =5)
+Conv21Entry = Entry(root, bd =5)
+Conv22Entry = Entry(root, bd =5)
+Conv00Entry.grid(row=1,column=0)
+Conv01Entry.grid(row=1,column=1)
+Conv02Entry.grid(row=1,column=2)
+Conv10Entry.grid(row=2,column=0)
+Conv11Entry.grid(row=2,column=1)
+Conv12Entry.grid(row=2,column=2)
+Conv20Entry.grid(row=3,column=0)
+Conv21Entry.grid(row=3,column=1)
+Conv22Entry.grid(row=3,column=2)
 
-
-
-brightnessLabel = Label(root, text="Brightness")
-contrastLabel = Label(root, text="Contrast")
-zoomOutLabel = Label(root, text="ZoomOut")
-
+brightnessLabel = Label(root, text="Brightness").grid(row=4,column=0)
 brightnessEntry = Entry(root, bd =5)
+brightnessEntry.grid(row=4,column=1)
+contrastLabel = Label(root, text="Contrast").grid(row=5,column=0)
 contrastEntry = Entry(root, bd =5)
+contrastEntry.grid(row=5,column=1)
+
+zoomOutLabel = Label(root, text="ZoomOut").grid(row=6,column=0)
 zoomOutXEntry = Entry(root, bd =5)
+zoomOutXEntry.grid(row=6,column=1)
 zoomOutYEntry = Entry(root, bd =5)
+zoomOutYEntry.grid(row=6,column=2)
 
-selectImageBtn = Button(root, text="Select an image", command=selectImage)
-horizontalBtn = Button(root, text ="Flip Horizontally", command = flipHorizontal)
-grayscaleBtn = Button(root, text ="Grayscale", command = grayscale)
-histogramBtn = Button(root, text ="Generate Histogram", command = generateHistogram)
-brightnessBtn = Button(root, text ="Change Brightness", command = changeBrightness)
-contrastBtn = Button(root, text ="Change Contrast", command = changeContrast)
-negativeBtn = Button(root, text ="Negative", command = negative)
-equalizeBtn = Button(root, text ="Equalize", command = equalize)
-zoomOutBtn = Button(root, text ="ZoomOut", command = zoomOut)
-
-brightnessLabel.pack()
-contrastLabel.pack()
-zoomOutLabel.pack()
-
-brightnessEntry.pack()
-contrastEntry.pack()
-zoomOutXEntry.pack()
-zoomOutYEntry.pack()
-
-selectImageBtn.pack(side="bottom", fill="both", expand="yes", padx="10", pady="10")
-horizontalBtn.pack(side =BOTTOM) 
-grayscaleBtn.pack(side =BOTTOM) 
-histogramBtn.pack(side =BOTTOM) 
-brightnessBtn.pack(side =BOTTOM) 
-contrastBtn.pack(side =BOTTOM) 
-negativeBtn.pack(side =BOTTOM) 
-equalizeBtn.pack(side =BOTTOM) 
-zoomOutBtn.pack(side =BOTTOM) 
+selectImageBtn = Button(root, text="Select an image", command=selectImage).grid(row=0,column=3)
+horizontalBtn = Button(root, text ="Flip Horizontally", command = flipHorizontal).grid(row=1,column=3)
+grayscaleBtn = Button(root, text ="Grayscale", command = grayscale).grid(row=2,column=3)
+histogramBtn = Button(root, text ="Generate Histogram", command = generateHistogram).grid(row=3,column=3)
+brightnessBtn = Button(root, text ="Change Brightness", command = changeBrightness).grid(row=4,column=3)
+contrastBtn = Button(root, text ="Change Contrast", command = changeContrast).grid(row=5,column=3)
+negativeBtn = Button(root, text ="Negative", command = negative).grid(row=6,column=3)
+equalizeBtn = Button(root, text ="Equalize", command = equalize).grid(row=7,column=3)
+zoomOutBtn = Button(root, text ="ZoomOut", command = zoomOut).grid(row=8,column=3)
+zoomInBtn = Button(root, text ="ZoomIn", command = zoomIn).grid(row=9,column=3)
+rotateClockWiseBtn = Button(root, text ="rotateClockWise", command = rotateClockWise).grid(row=10,column=3)
+rotateAntiClockWiseBtn = Button(root, text ="rotateAntiClockWise", command = rotateAntiClockWise).grid(row=11,column=3)
+convoluteBtn = Button(root, text ="Convolute", command = convolute).grid(row=12,column=3)
 
 root.mainloop()
-# Load images
-
-
-# Open windows
-newWindow('Original Image')
-newWindow('Result Image')
-
-# Create trackbars
-horizontalTrackbar = Trackbar('Horizontal', 'Original Image',0,1)
-grayscaleTrackbar = Trackbar('Grayscale', 'Original Image',0,1)
-histogramTrackbar = Trackbar('Histogram', 'Result Image',0,1)
-addBrightnessTrackbar = Trackbar('AddBrightness', 'Original Image',0,255)
-subBrightnessTrackbar = Trackbar('SubBrightness', 'Original Image',0,255)
-triggerBrightnessTrackbar = Trackbar('TrigBrightness', 'Original Image',0,1)
-contrastTrackbar = Trackbar('Contrast', 'Original Image',0,255)
-triggerContrastTrackbar = Trackbar('TrigContrast', 'Original Image',0,1)
-negativeTrackbar = Trackbar('Negative', 'Original Image',0,1)
-equalizeTrackbar = Trackbar('Equalize', 'Original Image',0,1)
