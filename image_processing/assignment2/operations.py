@@ -1,6 +1,50 @@
 import numpy as np
 import cv2
 import copy
+from Tkinter import *
+from PIL import Image
+from PIL import ImageTk
+import tkFileDialog
+
+
+def selectImage():
+	global panelA, panelB, panelC
+	global img, img2
+
+	path = tkFileDialog.askopenfilename()
+
+	if len(path) > 0:
+		#img = loadImage('test_images/Space_187k.jpg')
+		#img2 = loadImage('test_images/Space_187k.jpg')
+		
+		img = loadImage(path)
+		img2 = loadImage(path)
+		img3 = loadImage(path)
+
+		displayedImage = imgCvToTk(img)
+		displayedImage2 = imgCvToTk(img2)
+		displayedImage3 = imgCvToTk(img3)
+
+	if panelA is None or panelB is None or panelC is None:
+		panelA = Label(image=displayedImage)
+		panelA.image = displayedImage
+		panelA.pack(side="left", padx=10, pady=10)
+
+		panelB = Label(image=displayedImage2)
+		panelB.image = displayedImage2
+		panelB.pack(side="bottom", padx=10, pady=10)
+
+		panelC = Label(image=displayedImage3)
+		panelC.image = displayedImage3
+		panelC.pack(side="right", padx=10, pady=10)
+	else:
+		# update the pannels
+		panelA.configure(image=displayedImage)
+		panelB.configure(image=displayedImage2)
+		panelC.configure(image=displayedImage3)
+		panelA.image = displayedImage
+		panelB.image = displayedImage2
+		panelC.image = displayedImage3
 
 def nothing(x):
 	pass
@@ -8,65 +52,103 @@ def nothing(x):
 def loadImage(address):
 	return cv2.imread(address,1)
 
+def updateImagesInScreen():
+	global img2, img3
+	displayImage2 = imgCvToTk(img2)
+	displayImage3 = imgCvToTk(img3)
+	panelB.configure(image=displayImage2)
+	panelB.image = displayImage2
+	panelC.configure(image=displayImage3)
+	panelC.image = displayImage3
+
+def imgCvToTk(image):
+	convertedImg = copy.deepcopy(image)
+	convertedImg = cv2.cvtColor(convertedImg, cv2.COLOR_BGR2RGB)
+	convertedImg = Image.fromarray(convertedImg)
+	convertedImg = ImageTk.PhotoImage(convertedImg)
+	return convertedImg
+
 def newWindow(name):
 	cv2.namedWindow(name, cv2.WINDOW_NORMAL)
 
-def flipHorizontal(img):
-	return img[:,::-1]
+def flipHorizontal():
+	global img2
+	global img3
+	img2 = img2[:,::-1]
+	updateImagesInScreen()
 
-def changeBrightness(img, amount, channel):
-	newImg = copy.deepcopy(img)
+def changeBrightness():
+	global img2
+	global img3
+	amount = int(brightnessEntry.get())
+	newImg = copy.deepcopy(img2)
 
-	for i in range(img.shape[0]):
-		for j in range(img.shape[1]):
-			if img[i][j][channel] + amount > 255:
-				newImg[i][j][channel] = 255
-			elif img[i][j][channel] + amount < 0:
-				newImg[i][j][channel] = 0
-			else:
-				newImg[i][j][channel]+=amount
+	for c in range(0, 3):
+		for i in range(img2.shape[0]):
+			for j in range(img2.shape[1]):
+				if img2[i][j][c] + amount > 255:
+					newImg[i][j][c] = 255
+				elif img2[i][j][c] + amount < 0:
+					newImg[i][j][c] = 0
+				else:
+					newImg[i][j][c]+=amount
 
-	return newImg
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
 
-def changeContrast(img, amount, channel):
-	newImg = copy.deepcopy(img)
+def changeContrast():
+	global img2
+	global img3
+	amount = int(contrastEntry.get())
+	newImg = copy.deepcopy(img2)
 
-	for i in range(img.shape[0]):
-		for j in range(img.shape[1]):
-			if img[i][j][channel] * amount > 255:
-				newImg[i][j][channel] = 255
-			elif img[i][j][channel] * amount < 0:
-				newImg[i][j][channel] = 0
-			else:
-				newImg[i][j][channel]*=amount
+	for c in range(0, 3):
+		for i in range(img2.shape[0]):
+			for j in range(img2.shape[1]):
+				if img2[i][j][c] * amount > 255:
+					newImg[i][j][c] = 255
+				elif img2[i][j][c] * amount < 0:
+					newImg[i][j][c] = 0
+				else:
+					newImg[i][j][c]*=amount
 
-	return newImg
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
 
-def negative(img, channel):
-	newImg = copy.deepcopy(img)
+def negative():
+	global img2
+	global img3
+	newImg = copy.deepcopy(img2)
 
-	for i in range(img.shape[0]):
-		for j in range(img.shape[1]):
-				newImg[i][j][channel] = 255 - newImg[i][j][channel]
+	for c in range(0, 3):
+		for i in range(img2.shape[0]):
+			for j in range(img2.shape[1]):
+					newImg[i][j][c] = 255 - newImg[i][j][c]
 
-	return newImg
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
 
-def grayscale(img):
-		for i in range (img.shape[0]):
-			for j in range (img.shape[1]):
-				pixel = img[i][j]
-				l = pixel[0]*0.299 + pixel[1]*0.587 + pixel[2]*0.114
-				img[i][j].fill(l)
+def grayscale():
+	global img2
+	global img3
+	for i in range (img2.shape[0]):
+		for j in range (img2.shape[1]):
+			pixel = img2[i][j]
+			l = pixel[0]*0.299 + pixel[1]*0.587 + pixel[2]*0.114
+			img2[i][j].fill(l)
+	updateImagesInScreen()
 
-def generateHistogram(img):
+def generateHistogram():
+	global img2
+	global img3
 	#if image is colored
-	if (img[0][0][0] != img[0][0][1]):
-		grayscale(img)
+	if (img2[0][0][0] != img2[0][0][1]):
+		grayscale()
 
 	histogramDict = {}
-	for i in range (img.shape[0]):
-			for j in range (img.shape[1]):
-				pixel = img[i][j]
+	for i in range (img2.shape[0]):
+			for j in range (img2.shape[1]):
+				pixel = img2[i][j]
 				if pixel[0] in histogramDict:
 					histogramDict[pixel[0]]+=1
 				else:
@@ -77,20 +159,24 @@ def generateHistogram(img):
 			histogramDict[i] = 0
 
 	for key, value in histogramDict.items():
-		histogramDict[key] = (histogramDict[key]/float((img.shape[0]*img.shape[1])))*255
+		histogramDict[key] = (histogramDict[key]/float((img2.shape[0]*img2.shape[1])))*255
 
 	imgHistogram = np.full((256,256,3), 255, np.uint8)
 
 	for i in range(imgHistogram.shape[0]):
-		print(histogramDict[i])
 		imgHistogram[255-histogramDict[i]:255,i] = (0,0,0)
 
-	return imgHistogram
+	img3 = copy.deepcopy(imgHistogram)
+	updateImagesInScreen()
 
 def generateCumulativeHistogram(img):
 	alpha = 255.0/(img.shape[0]*img.shape[1])
 	histogramDict = {}
 	cumHistogramDict = {}
+
+	for i in range(0,256):
+		if i not in histogramDict:
+			histogramDict[i] = 0
 
 	for i in range (img.shape[0]):
 			for j in range (img.shape[1]):
@@ -101,40 +187,100 @@ def generateCumulativeHistogram(img):
 					histogramDict[pixel[0]] = 1
 
 	cumHistogramDict[0] = alpha*histogramDict[0]
-	print('alpha: ',alpha)
-	print('hape0',img.shape[0])
-	print('hape1',img.shape[1])
 	for i in range(1,256):
 		cumHistogramDict[i] = cumHistogramDict[i-1] + alpha*histogramDict[i]
+		print('oi:',)
 
 	return cumHistogramDict
 
-class Trackbar:
-	def __init__(self, name, windowName, start, end):
-		self.name = name
-		self.windowName = windowName
-		self.start = start
-		self.end = end
-		self.switch = 0
-		cv2.createTrackbar(name,windowName,start,end,nothing)
+def equalize():
+	global img2
+	global img3
+	generateHistogram()
+	imgHistogram = copy.deepcopy(img3)
+	cumulativeHistogram = generateCumulativeHistogram(img2)
+	
+	for i in range (img2.shape[0]):
+		for j in range (img2.shape[1]):
+			img2[i][j] = cumulativeHistogram[img2[i][j][0]]
 
-	def getSwitch(self):
-		return self.switch
+	updateImagesInScreen()
 
-	def hasBeenTriggered(self):
-		GUISwitch = cv2.getTrackbarPos(self.name,self.windowName)
-		if GUISwitch != self.switch:
-			self.switch = GUISwitch
-			return 1
-		else:
-			return 0
+def zoomOut():
+	global img2
+	global img3
+	sX = int(zoomOutXEntry.get())
+	sY = int(zoomOutYEntry.get())
+	newImg = np.full((img2.shape[0]/sX,img2.shape[1]/sY,3), 255, np.uint8)
+	i = 0
+	#for c in range(0,3):
+	while i < img2.shape[0]-sX:
+		j=0
+		while j < img2.shape[1]-sY:
+			total = 0
+			for x in range(i,i+sX):
+				for y in range(j,j+sY):
+					total+=img2[x,y,0]
+			avg = total/(sX*sY)
+			newImg[i/sX,j/sY,:] = avg
+			j+=sY
+		i+=sX
 
-	def getCurrentValue(self):
-		return cv2.getTrackbarPos(self.name,self.windowName)
+	img2 = copy.deepcopy(newImg)
+	updateImagesInScreen()
 
+
+root = Tk()
+panelA = None
+panelB = None
+img = None
+img2 = None
+img3 = None
+
+
+
+
+brightnessLabel = Label(root, text="Brightness")
+contrastLabel = Label(root, text="Contrast")
+zoomOutLabel = Label(root, text="ZoomOut")
+
+brightnessEntry = Entry(root, bd =5)
+contrastEntry = Entry(root, bd =5)
+zoomOutXEntry = Entry(root, bd =5)
+zoomOutYEntry = Entry(root, bd =5)
+
+selectImageBtn = Button(root, text="Select an image", command=selectImage)
+horizontalBtn = Button(root, text ="Flip Horizontally", command = flipHorizontal)
+grayscaleBtn = Button(root, text ="Grayscale", command = grayscale)
+histogramBtn = Button(root, text ="Generate Histogram", command = generateHistogram)
+brightnessBtn = Button(root, text ="Change Brightness", command = changeBrightness)
+contrastBtn = Button(root, text ="Change Contrast", command = changeContrast)
+negativeBtn = Button(root, text ="Negative", command = negative)
+equalizeBtn = Button(root, text ="Equalize", command = equalize)
+zoomOutBtn = Button(root, text ="ZoomOut", command = zoomOut)
+
+brightnessLabel.pack()
+contrastLabel.pack()
+zoomOutLabel.pack()
+
+brightnessEntry.pack()
+contrastEntry.pack()
+zoomOutXEntry.pack()
+zoomOutYEntry.pack()
+
+selectImageBtn.pack(side="bottom", fill="both", expand="yes", padx="10", pady="10")
+horizontalBtn.pack(side =BOTTOM) 
+grayscaleBtn.pack(side =BOTTOM) 
+histogramBtn.pack(side =BOTTOM) 
+brightnessBtn.pack(side =BOTTOM) 
+contrastBtn.pack(side =BOTTOM) 
+negativeBtn.pack(side =BOTTOM) 
+equalizeBtn.pack(side =BOTTOM) 
+zoomOutBtn.pack(side =BOTTOM) 
+
+root.mainloop()
 # Load images
-img = loadImage('test_images/Space_187k.jpg')
-img2 = loadImage('test_images/Space_187k.jpg')
+
 
 # Open windows
 newWindow('Original Image')
@@ -151,59 +297,3 @@ contrastTrackbar = Trackbar('Contrast', 'Original Image',0,255)
 triggerContrastTrackbar = Trackbar('TrigContrast', 'Original Image',0,1)
 negativeTrackbar = Trackbar('Negative', 'Original Image',0,1)
 equalizeTrackbar = Trackbar('Equalize', 'Original Image',0,1)
-
-while(1):
-	cv2.imshow('Original Image',img)
-	cv2.imshow('Result Image',img2)
-
-	if horizontalTrackbar.hasBeenTriggered():
-		img2 = flipHorizontal(img2)
-
-	if grayscaleTrackbar.hasBeenTriggered():
-		grayscale(img2)
-
-	if histogramTrackbar.hasBeenTriggered():
-		imgHistogram = generateHistogram(img2)
-		
-		newWindow('Histogram')
-		cv2.imshow('Histogram',imgHistogram)
-
-	if triggerBrightnessTrackbar.hasBeenTriggered():
-		brightness = addBrightnessTrackbar.getCurrentValue()
-		brightness-= subBrightnessTrackbar.getCurrentValue()
-		img2 = changeBrightness(img2, brightness, 0)
-		img2 = changeBrightness(img2, brightness, 1)
-		img2 = changeBrightness(img2, brightness, 2)
-
-	if triggerContrastTrackbar.hasBeenTriggered():
-		contrast = contrastTrackbar.getCurrentValue()
-		img2 = changeContrast(img2, contrast, 0)
-		img2 = changeContrast(img2, contrast, 1)
-		img2 = changeContrast(img2, contrast, 2)
-
-	if negativeTrackbar.hasBeenTriggered():
-		img2 = negative(img2, 0)
-		img2 = negative(img2, 1)
-		img2 = negative(img2, 2)
-
-	if equalizeTrackbar.hasBeenTriggered():
-		imgHistogram = generateHistogram(img2)
-		cumulativeHistogram = generateCumulativeHistogram(img2)
-		
-		for i in range (img2.shape[0]):
-			for j in range (img2.shape[1]):
-				img2[i][j] = cumulativeHistogram[img2[i][j][0]]
-
-		newWindow('Histogram')
-		cv2.imshow('Histogram',imgHistogram)
-
-		imgHistogram = generateHistogram(img2)
-		newWindow('Equalized Histogram')
-		cv2.imshow('Equalized Histogram',imgHistogram)
-
-	k = cv2.waitKey(1) & 0xFF
-	if k == 27:
-		break
-
-
-cv2.destroyAllWindows()
