@@ -308,9 +308,40 @@ def convolute():
 
 	for i in range(1,newImg.shape[0]-1):
 		for j in range(1,newImg.shape[1]-1):
-			print('before',img2[i,j,:])
-			newImg[i,j,:] = img2[i-1,j-1,:]*float(Conv20Entry.get()) + img2[i,j-1,:]*float(Conv21Entry.get()) + img2[i+1,j-1,:]*float(Conv22Entry.get()) + img2[i-1,j,:]*float(Conv10Entry.get()) + img2[i,j,:]*float(Conv11Entry.get()) + img2[i+1,j,:]*float(Conv12Entry.get()) + img2[i-1,j+1,:]*float(Conv00Entry.get()) + img2[i,j+1,:]*float(Conv01Entry.get()) + img2[i+1,j+1,:]*float(Conv02Entry.get())
-			print('after',newImg[i,j,:])
+			'''print('00',img2[i-1,j-1,:])
+			print('01',img2[i,j-1,:])
+			print('02',img2[i+1,j-1,:])
+			print('10',img2[i-1,j,:])
+			print('11',img2[i,j,:])
+			print('12',img2[i+1,j,:])
+			print('20',img2[i-1,j+1,:])
+			print('21',img2[i,j+1,:])
+			print('22',img2[i+1,j+1,:])'''
+
+			convC0 = int(img2[i-1,j-1,0])*float(Conv20Entry.get()) + int(img2[i,j-1,0])*float(Conv21Entry.get()) + int(img2[i+1,j-1,0])*float(Conv22Entry.get()) + int(img2[i-1,j,0])*float(Conv10Entry.get()) + int(img2[i,j,0])*float(Conv11Entry.get()) + int(img2[i+1,j,0])*float(Conv12Entry.get()) + int(img2[i-1,j+1,0])*float(Conv00Entry.get()) + int(img2[i,j+1,0])*float(Conv01Entry.get()) + int(img2[i+1,j+1,0])*float(Conv02Entry.get())
+			if convC0 < 0:
+				newImg[i,j,0] = 0
+			elif convC0 > 255:
+				newImg[i,j,0] = 255
+			else:
+				newImg[i,j,0] = convC0
+
+			convC1 = int(img2[i-1,j-1,1])*float(Conv20Entry.get()) + int(img2[i,j-1,1])*float(Conv21Entry.get()) + int(img2[i+1,j-1,1])*float(Conv22Entry.get()) + int(img2[i-1,j,1])*float(Conv10Entry.get()) + int(img2[i,j,1])*float(Conv11Entry.get()) + int(img2[i+1,j,1])*float(Conv12Entry.get()) + int(img2[i-1,j+1,1])*float(Conv00Entry.get()) + int(img2[i,j+1,1])*float(Conv01Entry.get()) + int(img2[i+1,j+1,1])*float(Conv02Entry.get())
+			if convC1 < 0:
+				newImg[i,j,1] = 0
+			elif convC1 > 255:
+				newImg[i,j,1] = 255
+			else:
+				newImg[i,j,1] = convC1
+
+			convC2 = int(img2[i-1,j-1,2])*float(Conv20Entry.get()) + int(img2[i,j-1,2])*float(Conv21Entry.get()) + int(img2[i+1,j-1,2])*float(Conv22Entry.get()) + int(img2[i-1,j,2])*float(Conv10Entry.get()) + int(img2[i,j,2])*float(Conv11Entry.get()) + int(img2[i+1,j,2])*float(Conv12Entry.get()) + int(img2[i-1,j+1,2])*float(Conv00Entry.get()) + int(img2[i,j+1,2])*float(Conv01Entry.get()) + int(img2[i+1,j+1,2])*float(Conv02Entry.get())
+			if convC2 < 0:
+				newImg[i,j,2] = 0
+			elif convC2 > 255:
+				newImg[i,j,2] = 255
+			else:
+				newImg[i,j,2] = convC2
+
 	img2 = copy.deepcopy(newImg)
 	updateImagesInScreen()
 
