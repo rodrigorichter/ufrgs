@@ -39,7 +39,7 @@ if vc.isOpened():
 else:
 	rval = False
 
-fourcc = cv2.cv.CV_FOURCC('m', 'p', '4', 'v')
+fourcc = cv2.cv.CV_FOURCC('m','p','4','v')
 out = cv2.VideoWriter('output.avi', fourcc, 20.0, (frame.shape[1],frame.shape[0]))
 
 while rval:
@@ -109,7 +109,6 @@ while rval:
 
 	cv2.imshow('Original Video', frame)
 
-	
 	resultFrame = copy.deepcopy(frame)
 
 	if gaussianBlurIsActive:
@@ -117,35 +116,42 @@ while rval:
 		if kSize % 2 == 0:
 			kSize-=1
 		resultFrame = copy.deepcopy(cv2.GaussianBlur(frame,(kSize,kSize),30))
-	if cannyIsActive:
+	elif cannyIsActive:
 		resultFrame = copy.deepcopy(cv2.Canny(frame,100,100))
-	if sobelIsActive:
-		resultFrame = copy.deepcopy(cv2.Sobel(frame,cv2.CV_64F,1,0,ksize=5))
-	if brightnessIsActive:
+		resultFrame = copy.deepcopy(cv2.cvtColor(resultFrame,cv2.COLOR_GRAY2RGB))
+	elif sobelIsActive:
+		resultFrame = copy.deepcopy(cv2.Sobel(frame,cv2.CV_8U,1,1,ksize=7))
+	elif brightnessIsActive:
 		amount = cv2.getTrackbarPos(flipBrightnessLevel,'Original Video')
 		resultFrame = cv2.add(frame, np.full((frame.shape[0],frame.shape[1],3), amount, np.uint8))
-	if contrastIsActive:
+	elif contrastIsActive:
 		amount = cv2.getTrackbarPos(flipContrastLevel,'Original Video')
 		resultFrame = cv2.multiply(frame, np.full((frame.shape[0],frame.shape[1],3), amount, np.uint8))
-	if negativeIsActive:
+	elif negativeIsActive:
 		resultFrame = 255-frame
-	if grayscaleIsActive:
+	elif grayscaleIsActive:
 		resultFrame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-	if resizeIsActive:
+		resultFrame = copy.deepcopy(cv2.cvtColor(resultFrame,cv2.COLOR_GRAY2RGB))
+	elif resizeIsActive:
 		resultFrame = cv2.resize(frame,((frame.shape[0])/2,(frame.shape[1])/2))
-	if rotateIsActive:
+	elif rotateIsActive:
 		rows=frame.shape[0]
 		cols=frame.shape[1]
 		resultFrame = cv2.warpAffine(frame, cv2.getRotationMatrix2D((cols/2,rows/2),90,1),(cols,rows))
-	if horizontalFlipIsActive:
+	elif horizontalFlipIsActive:
 		resultFrame = cv2.flip(frame,1)
-	if verticalFlipIsActive:
+	elif verticalFlipIsActive:
 		resultFrame = cv2.flip(frame,0)
 
-	cv2.imshow('Result Video',resultFrame)
-	out.write(resultFrame)
+	frame = copy.deepcopy(resultFrame)
+
+	cv2.imshow('Result Video',frame)
+	out.write(frame)	
 
 vc.release()
 out.release()
 cv2.destroyWindow('Original Video')
 cv2.destroyWindow('Result Video')
+
+
+#cd dev/u*/i*/a*3
