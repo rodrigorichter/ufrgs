@@ -31,12 +31,7 @@ def genetic(func):
 
 	pNew = []
 
-	while(True):
-		# if found solution, stop
-		for i in range(0,100):
-			if p[i].solution == 0:
-				return p[i]
-
+	for a in range(0,100):
 		# evolve next generation
 		for i in range(0,50):
 			# find individual with best fitness
@@ -70,6 +65,14 @@ def genetic(func):
 			pNew[idx].update(random.randint(-32,32),pNew[idx].y)
 
 		p = pNew
+
+	b = p[0]
+	for j in range(0,len(p)):
+		if p[j].solution < b.solution:
+			b = p[j]
+
+	biggest = copy.deepcopy(b)
+	return biggest
 
 globalMinimumState = genetic(ackley)
 
