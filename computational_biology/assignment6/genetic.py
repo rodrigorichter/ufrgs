@@ -23,6 +23,10 @@ class State:
 		self.solution = self.f(x,y)
 
 def genetic(func):
+	f = open('gen_out.txt','w')
+	f.write(',Algoritmo Genetico')
+	f.write("\n")
+
 	p = []
 
 	# generate initial population
@@ -65,6 +69,17 @@ def genetic(func):
 			pNew[idx].update(random.randint(-32,32),pNew[idx].y)
 
 		p = pNew
+
+		b = p[0]
+		for j in range(0,len(p)):
+			if p[j].solution < b.solution:
+				b = p[j]
+
+		biggest = copy.deepcopy(b)
+		f.write(str(a))
+		f.write(',')
+		f.write(str(biggest.solution))
+		f.write("\n")
 
 	b = p[0]
 	for j in range(0,len(p)):
