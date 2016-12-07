@@ -1,8 +1,0 @@
-#include <stdio.h>
-
-int main() {
-	char a = "34756430897421389";
-	char b = "125";
-
-	return 0;
-}

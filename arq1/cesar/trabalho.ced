@@ -1,0 +1,1063 @@
+;> Inicializacao do apontador da pilha
+;> para que a pilha fique acima da area
+;> de memoria mapeada para entrada e saida
+;> ESTAS DUAS INSTRUCOES DEVEM SER MANTIDAS AQUI !
+;--->>>--- Inicializaão das variáveis --->>>---
+ORG 65498
+STATUS: DB 0
+DATA: DB 0
+;--->>>--- Inicio do Programa --->>>---
+ORG 0
+          ORG 0                 ; primeira instrucao de qualquer 
+          MOV #65498,R6         ; programa: aponta SP para 65498
+;>-------------------------------------------------<
+;>>                                               <<
+;>>>                                             <<<
+;>>>> INSERIR AQUI O CODIGO DE SEU PROGRAMA !!! <<<<
+;>>>                                             <<<
+;>>                                               <<
+;>-------------------------------------------------<
+
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+
+;--->>>--- Estado 1: escreve nome e cartão e espera o usuário digitar enter --->>>---
+MOV #23, R0
+MOV #estado1tela, R1
+MOV #65500, R2
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7,_S_ESCREVER_NO_VISOR
+estado_1_loop:
+JSR R7, getchar
+CMP R0, #13
+BNE estado_1_loop
+
+;--->>>--- Estado 2: mostra mensagens de instruçao do programa na tela --->>>---
+MOV #29, R0
+MOV #estado2tela1, R1
+MOV #65500, R2
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7,_S_ESCREVER_NO_VISOR
+estado_2_1_loop:
+JSR R7, getchar
+CMP R0, #13
+BNE estado_2_1_loop
+
+MOV #28, R0
+MOV #estado2tela2, R1
+MOV #65500, R2
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7,_S_ESCREVER_NO_VISOR
+estado_2_2_loop:
+JSR R7, getchar
+CMP R0, #13
+BNE estado_2_2_loop
+
+MOV #29, R0
+MOV #estado2tela3, R1
+MOV #65500, R2
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7,_S_ESCREVER_NO_VISOR
+estado_2_3_loop:
+JSR R7, getchar
+CMP R0, #13
+BNE estado_2_3_loop
+
+MOV #23, R0
+MOV #estado2tela4, R1
+MOV #65500, R2
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7,_S_ESCREVER_NO_VISOR
+estado_2_4_loop:
+JSR R7, getchar
+CMP R0, #13
+BNE estado_2_4_loop
+
+;--->>>--- Estado 3: aceita comandos dependendo de vários fatores --->>>---
+estado3:
+
+CMP ultimo_ponto, #0
+BNE escreve_ponto
+
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+MOV #28, R0
+MOV #msgsempontos, R1
+MOV #65500, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP loop_principal
+
+escreve_ponto:
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+JSR R7, mostrapontoatual
+
+
+loop_principal:
+
+JSR R7, getchar
+CMP R0, #105
+BEQ chama_insercao
+CMP R0, #73
+BEQ chama_insercao
+
+CMP ultimo_ponto, #0
+BEQ loop_principal
+
+CMP R0, #119
+BEQ proximo
+CMP R0, #87
+BEQ proximo
+CMP R0, #115
+BEQ anterior
+CMP R0, #83
+BEQ anterior
+
+CMP ultimo_ponto, #3
+BLT loop_principal
+
+CMP R0, #97
+BEQ calcula_area
+CMP R0, #65
+BEQ calcula_area
+
+JMP loop_principal
+
+chama_insercao:
+JSR R7, modo_insercao
+
+
+proximo:
+anterior:
+calcula_area:
+HLT
+;--->>>-- Variáveis --->>>---
+ldp: DAW [200]
+ponto_atual: DW 50
+ultimo_ponto: DW 50
+estado1tela: DAB 'Rodrigo Richter, 217445'
+estado2tela1: DAB 'Inserir um novo ponto: i ou I'
+estado2tela2: DAB 'Ir ao ponto anterior: w ou W'
+estado2tela3: DAB 'Ir ao ponto posterior: s ou S'
+estado2tela4: DAB 'Calcular a area: a ou A'
+msgsempontos: DAB 'Lista vazia, insira um ponto'
+msginserirx: DAB 'Ponto     - coordenada X = '
+msginseriry: DAB 'Ponto     - coordenada Y = '
+cem: DAB '100'
+cursor: DAB '_ '
+
+mostrapontoatualvisor: DAB 'Ponto    : X=    Y='
+String: DAB '123456'
+teste: DW 97
+pontoXinsercao: DW 0
+pontoYinsercao: DW 0
+posCursorInsercao: DW 65500
+xteste: DW 0
+
+;>---------------------------------------------<
+;> AS SUBROTINAS DEVEM INICIAR SOMENTE APOS A  <
+;> ULTIMA INSTRUCAO CODIFICADA NO PROGRAMA !!  <
+;>---------------------------------------------<
+;>
+;>
+;>Subrotina para avançar ao proximo ponto
+avanca_ponto:
+
+
+
+
+
+;>
+
+modo_insercao:
+
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+
+insere_x:
+MOV #27, R0
+MOV #msginserirx, R1
+MOV #65500, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+MOV #65528, posCursorInsercao
+ADD #1, ponto_atual
+ADD #1, ultimo_ponto
+
+
+CMP ponto_atual, #100
+BEQ eh100_3
+
+CMP ponto_atual, #10
+BGE entre10e99_3
+JMP menorq10_3
+
+eh100_3:
+MOV #3, R0
+MOV #cem, R1
+MOV #65506, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_x
+
+entre10e99_3:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65507, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_x
+
+menorq10_3:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #1, R0
+MOV #Stringuint2str+4, R1
+MOV #65508, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+
+
+escreve_x:
+
+MOV #2, R0
+MOV #cursor, R1
+MOV posCursorInsercao, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+JSR R7, getchar
+
+CMP R0, #48
+BEQ poe_tecla
+CMP R0, #49
+BEQ poe_tecla
+CMP R0, #50
+BEQ poe_tecla
+CMP R0, #51
+BEQ poe_tecla
+CMP R0, #52
+BEQ poe_tecla
+CMP R0, #53
+BEQ poe_tecla
+CMP R0, #54
+BEQ poe_tecla
+CMP R0, #55
+BEQ poe_tecla
+CMP R0, #56
+BEQ poe_tecla
+CMP R0, #57
+BEQ poe_tecla
+CMP R0, #8
+BEQ decrementa_cursor
+CMP R0, #13
+BEQ salva_x
+CMP R0, #27
+BEQ sai_da_insercao_2
+
+JMP escreve_x
+
+poe_tecla:
+CMP posCursorInsercao, #65530
+BEQ escreve_x
+MOV posCursorInsercao, R2
+MOV R0, (R2)
+
+JMP incrementa_cursor
+
+
+incrementa_cursor:
+CMP posCursorInsercao, #65530
+BEQ escreve_x
+ADD #1, posCursorInsercao
+JMP escreve_x
+
+decrementa_cursor:
+SUB #1, posCursorInsercao
+CMP posCursorInsercao, #65527
+BEQ incrementa_cursor
+JMP escreve_x
+
+sai_da_insercao_2:
+SUB #1, ponto_atual
+SUB #1, ultimo_ponto
+RTS R7
+
+salva_x:
+
+MOV 65528, Stringstr2int
+MOV #0, Stringstr2int+3
+
+MOV	#Stackstr2int,R6
+
+	MOV	#Stringstr2int,-(R6)	; s
+	MOV	#Int,-(R6)		; &n
+	JSR	R7,str2int_2
+	ADD	#4,R6
+
+MOV Int, pontoXinsercao
+
+
+JSR R7,_S_LIMPA_VISOR_RAPIDA
+
+MOV #27, R0
+MOV #msginseriry, R1
+MOV #65500, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+MOV #65528, posCursorInsercao
+
+
+CMP ponto_atual, #100
+BEQ eh100_4
+
+CMP ponto_atual, #10
+BGE entre10e99_4
+JMP menorq10_4
+
+eh100_4:
+MOV #3, R0
+MOV #cem, R1
+MOV #65506, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_y
+
+entre10e99_4:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65507, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_y
+
+menorq10_4:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #1, R0
+MOV #Stringuint2str+4, R1
+MOV #65508, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+escreve_y:
+
+MOV #2, R0
+MOV #cursor, R1
+MOV posCursorInsercao, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+JSR R7, getchar
+
+CMP R0, #48
+BEQ poe_tecla2
+CMP R0, #49
+BEQ poe_tecla2
+CMP R0, #50
+BEQ poe_tecla2
+CMP R0, #51
+BEQ poe_tecla2
+CMP R0, #52
+BEQ poe_tecla2
+CMP R0, #53
+BEQ poe_tecla2
+CMP R0, #54
+BEQ poe_tecla2
+CMP R0, #55
+BEQ poe_tecla2
+CMP R0, #56
+BEQ poe_tecla2
+CMP R0, #57
+BEQ poe_tecla2
+CMP R0, #8
+BEQ decrementa_cursor2
+CMP R0, #13
+BEQ salva_y
+CMP R0, #27
+BEQ sai_da_insercao
+
+JMP escreve_y
+
+poe_tecla2:
+CMP posCursorInsercao, #65530
+BEQ escreve_y
+MOV posCursorInsercao, R2
+MOV R0, (R2)
+
+JMP incrementa_cursor2
+
+
+incrementa_cursor2:
+CMP posCursorInsercao, #65530
+BEQ escreve_y
+ADD #1, posCursorInsercao
+JMP escreve_y
+
+decrementa_cursor2:
+SUB #1, posCursorInsercao
+CMP posCursorInsercao, #65527
+BEQ incrementa_cursor2
+JMP escreve_y
+
+salva_y:
+
+MOV 65528, Stringstr2int
+MOV #0, Stringstr2int+3
+
+MOV	#Stackstr2int,R6
+
+	MOV	#Stringstr2int,-(R6)	; s
+	MOV	#Int,-(R6)		; &n
+	JSR	R7,str2int_2
+	ADD	#4,R6
+
+MOV Int, pontoYinsercao
+MOV #ldp, R5
+ADD ultimo_ponto, R5
+ADD ultimo_ponto, R5
+MOV pontoXinsercao, (R5)+
+MOV pontoYinsercao, (R5)
+RTS R7
+sai_da_insercao:
+SUB #1, ponto_atual
+SUB #1, ultimo_ponto
+
+RTS R7
+
+;>
+;>
+;> getchar
+;>
+getchar:
+getchar_While:
+	CMP STATUS, #H80
+	BNE getchar_While
+	MOV DATA, R0
+	CLR STATUS
+	RTS R7
+;>
+;> Subrotina para escrever os dados de um ponto no visor
+;>
+mostrapontoatual:
+
+MOV #19, R0
+MOV #mostrapontoatualvisor, R1
+MOV #65500, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+
+CMP ponto_atual, #100
+BEQ eh100
+
+CMP ponto_atual, #10
+BGE entre10e99
+JMP menorq10
+
+eh100:
+MOV #3, R0
+MOV #cem, R1
+MOV #65506, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_coord
+
+entre10e99:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65507, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+JMP escreve_coord
+
+menorq10:
+MOV	#Stack,R6
+MOV	ponto_atual,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #1, R0
+MOV #Stringuint2str+4, R1
+MOV #65508, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+escreve_coord:
+
+MOV ponto_atual, R5
+ADD ponto_atual, R5
+ADD #ldp, R5
+
+MOV #15, (R5)+
+MOV #27, (R5)
+SUB #2, R5
+
+
+MOV	#Stack,R6
+MOV	(R5),-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65513, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+MOV ponto_atual, R5
+ADD ponto_atual, R5
+ADD #ldp, R5
+ADD #2, R5
+
+MOV	#Stack,R6
+MOV	(R5)+,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65519, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+
+JMP loop_principal
+
+
+;> Subrotina para colocar o ultimo ponto no visor
+desenha_ultimo_ponto:
+CMP ultimo_ponto, #100
+BEQ eh100_2
+
+CMP ultimo_ponto, #10
+BGE entre10e99_2
+JMP menorq10_2
+
+eh100_2:
+MOV #3, R0
+MOV #cem, R1
+MOV #65506, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+RTS R7
+
+entre10e99_2:
+MOV	#Stack,R6
+MOV	ultimo_ponto,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #2, R0
+MOV #Stringuint2str+3, R1
+MOV #65507, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+RTS R7
+
+menorq10_2:
+MOV	#Stack,R6
+MOV	ultimo_ponto,-(R6)		; n
+MOV	#Stringuint2str,-(R6)	; s
+JSR	R7,uint2str
+ADD	#4,R6
+
+MOV #1, R0
+MOV #Stringuint2str+4, R1
+MOV #65508, R2
+JSR R7,_S_ESCREVER_NO_VISOR
+
+RTS R7
+
+;>
+;>
+;>
+;>
+; Subrotina para converter uma string em um numero
+;	ORG	0
+;	
+;	MOV	#Stackstr2int,R6
+;
+;	MOV	#Stringstr2int,-(R6)	; s
+;	MOV	#Int,-(R6)		; &n
+;	JSR	R7,str2int_2
+;	ADD	#4,R6
+;
+;	HLT
+;
+;
+;**********************************************************
+; void str2int( int *n, char *s)
+;	2(R6) -> n -> R3
+;	4(R6) -> s -> R0
+;
+;**********************************************************
+str2int_2:
+	MOV	2(R6),R3	; R3 = n
+	MOV	4(R6),R0	; R0 = s
+	
+	MOV	R0,-(R6)	; *n = str2int(s);
+	JSR	R7,str2int_1
+	ADD	#2,R6
+
+	MOV	R0,(R3)
+
+	RTS	R7
+
+
+;**********************************************************
+; int str2int( char *s)
+;	2(R6) -> s -> R1
+;
+;	int neg -> R5
+;	int n   -> R4
+;**********************************************************
+str2int_1:
+	MOV	2(R6),R1	; R1 = s
+
+	CLR	R5			; neg = false;
+	
+	MOV	-1(R1),R0	; if ( *s == '-' ) {
+	AND	#HFF00,R0
+	CMP	R0,#'-'
+	BNE	EhPositivo
+
+	INC	R5			;	neg = true
+	INC	R1			;	++s;
+					; }
+
+EhPositivo:
+	CLR	R4			; n = 0;
+
+;	2(R6) -> s -> R1
+;	int neg -> R5
+;	int n   -> R4
+Loopstr2int:			
+	MOV	-1(R1),R0	; while ( *s != ‘\0’ ) {
+	AND	#HFF00,R0
+	BEQ	LoopOutput
+				
+	SUB	#'0',R0		;	n = 10 * n + (*s - '0');
+	ASL	R4
+	MOV	R4,R2
+	ASL	R4
+	ASL	R4
+	ADD	R2,R4
+	ADD	R0,R4
+
+	INC	R1			;	++s;
+
+	JMP	Loopstr2int		; }
+
+LoopOutput:
+	TST	R5			; if (neg) {
+	BEQ	ret_str2int_1
+
+	NEG	R4			;	n = - n;
+					; }
+ret_str2int_1:
+	MOV	R4,R0		; return n;
+	RTS	R7
+
+
+Stringstr2int:		DAB	'-1200', 0
+Int:		DW	0
+
+; Tamanho do stack de 1024 palavras
+			DAW	[1024]
+Stackstr2int:
+
+
+;>
+;>Subrotina para converter um numero inteiro sem sinal para uma string ascii
+;
+; ---exemplo---
+;	ORG	0
+;	
+;	MOV	#Stack,R6
+;
+;
+;	MOV	#9982,-(R6)		; n
+;	MOV	#Stringuint2str,-(R6)	; s
+;	JSR	R7,uint2str
+;	ADD	#4,R6
+;
+;
+;	HLT
+;**********************************************************
+; void uint2str(char *s, uint n)
+;	2(R6) -> n -> R2
+;	4(R6) -> s -> R1
+;
+;	Lacos  -> R5
+;	pTab10 -> R4
+;	dig    -> R3
+;
+;**********************************************************
+Tab10:		DAW	10000, 1000, 100, 10
+uint2str:
+	MOV	2(R6),R1	; R1 = s
+	MOV	4(R6),R2	; R2 = n
+
+	MOV	#Tab10,R4	; pTab10 = Tab10;
+	MOV	#4,R5		; Lacos = 4;
+	
+Loop:				; do {
+	MOV	#'0',R3		; 	dig = '0';
+
+LoopInterno:
+	CMP	R2,(R4)		; 	while (n >= *pTab10) {
+	BLT	EhMenor
+	INC	R3			; 		++dig;
+	SUB	(R4),R2		; 		n -= *pTab10;
+	JMP	LoopInterno	; 	}
+
+EhMenor:
+	MOV	-1(R1),R0	; 	*s++ = dig;
+	AND	#HFF00,R0
+	OR	R3,R0
+	MOV	R0,-1(R1)
+	INC	R1
+	
+	ADD	#2,R4		; 	++pTab10;
+
+	SOB	R5,Loop		; } while (--Lacos);
+	
+	ADD	#'0',R2		; *s++ = n + ‘0’;
+	MOV	-1(R1),R0
+	AND	#HFF00,R0
+	OR	R2,R0
+	MOV	R0,-1(R1)
+	INC	R1
+	
+	MOV	-1(R1),R0	; *s++ = '\0;
+	AND	#HFF00,R0
+	MOV	R0,-1(R1)
+	
+	RTS	R7
+Stringuint2str:		DAB	[6]
+
+; Tamanho do stack de 1024 palavras
+DAW [1024]
+
+Stack:
+;
+;>
+;>
+;> Subrotina iterativa para "limpar" o visor (279 acessos)
+;>
+;> Chamada da subrotina:
+;>
+;> JSR R7,_S_LIMPA_VISOR_ITERATIVA
+;>
+          
+_S_LIMPA_VISOR_ITERATIVA:
+          MOV R0,-(R6)          ; salva R0 na pilha
+          MOV R1,-(R6)          ; salva R1 na pilha
+          MOV #65500,R1         ; move end. do visor p/R1
+          MOV #36,R0            ; move 36 para contador
+__OUTRO_LED:
+          CLR (R1)              ; limpa 1 LED do visor
+          INC R1                ; aponta p/LED seguinte
+          SOB R0,__OUTRO_LED    ; subtrai 1 do contador
+                                ; se <> 0, repete o laco
+          MOV (R6)+,R1          ; restaura R1
+          MOV (R6)+,R0          ; restaura R0
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;>
+;> Subrotina rapida para "limpar" o visor (183 acessos)
+;>
+;> Chamada da subrotina:
+;>
+;> JSR R7,_S_LIMPA_VISOR_RAPIDA
+;>
+
+_S_LIMPA_VISOR_RAPIDA:
+          CLR 65500             ; limpa LED 00
+          CLR 65501             ; limpa LED 01
+          CLR 65502             ; limpa LED 02
+          CLR 65503             ; limpa LED 03
+          CLR 65504             ; limpa LED 04
+          CLR 65505             ; limpa LED 05
+          CLR 65506             ; limpa LED 06
+          CLR 65507             ; limpa LED 07
+          CLR 65508             ; limpa LED 08
+          CLR 65509             ; limpa LED 09
+          CLR 65510             ; limpa LED 10
+          CLR 65511             ; limpa LED 11
+          CLR 65512             ; limpa LED 12
+          CLR 65513             ; limpa LED 13
+          CLR 65514             ; limpa LED 14
+          CLR 65515             ; limpa LED 15
+          CLR 65516             ; limpa LED 16
+          CLR 65517             ; limpa LED 17
+          CLR 65518             ; limpa LED 18
+          CLR 65519             ; limpa LED 19
+          CLR 65520             ; limpa LED 20
+          CLR 65521             ; limpa LED 21
+          CLR 65522             ; limpa LED 22
+          CLR 65523             ; limpa LED 23
+          CLR 65524             ; limpa LED 24
+          CLR 65525             ; limpa LED 25
+          CLR 65526             ; limpa LED 26
+          CLR 65527             ; limpa LED 27
+          CLR 65528             ; limpa LED 28
+          CLR 65529             ; limpa LED 29
+          CLR 65530             ; limpa LED 30
+          CLR 65531             ; limpa LED 31
+          CLR 65532             ; limpa LED 32
+          CLR 65533             ; limpa LED 33
+          CLR 65534             ; limpa LED 34
+          CLR 65535             ; limpa LED 35
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;>
+;> Subrotina "ultra rapida" "limpar" o visor (135 acessos)
+;>
+;> Chamada da subrotina:
+;>
+;> JSR R7,_S_LIMPA_VISOR_ULTRA
+;>
+
+_S_LIMPA_VISOR_ULTRA:
+          MOV R0,-(R6)          ; salva R0 na pilha
+          MOV R1,-(R6)          ; salva R1 na pilha
+          MOV #65500,R0         ; move end. do LED 0 do visor p/R1
+          MOV #65501,R1         ; move end. do LED 1 do visor p/R1
+          CLR (R0)+             ; limpa LED 00 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 01 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 02 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 03 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 04 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 05 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 06 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 07 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 08 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 09 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 10 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 11 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 12 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 13 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 14 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 15 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 16 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 17 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 18 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 19 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 20 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 21 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 22 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 23 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 24 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 25 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 26 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 27 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 28 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 29 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 30 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 31 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 32 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 33 do visor e soma 2 ao R1
+          CLR (R0)+             ; limpa LED 34 do visor e soma 2 ao R0
+          CLR (R1)+             ; limpa LED 35 do visor e soma 2 ao R1
+          MOV (R6)+,R1          ; restaura R1
+          MOV (R6)+,R0          ; restaura R0
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;>
+;> Subrotina para "preencher" o visor com um caractere
+;>
+;> Chamada da subrotina:
+;>
+;> MOV #codASCII,R2             ; colocar no R2 o caractere a ser usado
+;> JSR R7,_S_PREENCHE_VISOR
+;>
+          
+_S_PREENCHE_VISOR:
+          MOV R0,-(R6)          ; salva R0 na pilha
+          MOV R1,-(R6)          ; salva R1 na pilha
+          MOV #65500,R1         ; move end. do visor p/R1
+          MOV #36,R0            ; move 36 para contador
+__MAIS1_LED:
+          MOV R2,(R1)           ; move caractere p/1 LED do visor
+          INC R1                ; aponta p/LED seguinte
+          SOB R0,__MAIS1_LED    ; subtrai 1 do contador
+                                ; se <> 0, repete o laco
+          MOV (R6)+,R1          ; restaura R1
+          MOV (R6)+,R0          ; restaura R0
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;>
+;> Subrotina para escrever mensagem no visor
+;>
+;> Chamada da subrotina:
+;>
+;> MOV #tammensagem,R0          ; tamanho da mensagem (em caracteres)
+;> MOV #endmensagem,R1          ; endereco da mensagem a ser escrita no visor
+;> MOV #endvisor,R2             ; endereco do LED onde deve iniciar a mensagem
+;> JSR R7,_S_ESCREVER_NO_VISOR
+;>
+
+_S_ESCREVER_NO_VISOR:
+__VOLTA_ESCR:
+          MOV (R1),R3           ; coloca 2 caracteres em R3
+          ASR R3                ; alinha primeiro caractere
+          ASR R3                ; a direita do registrador,
+          ASR R3                ; porque quando se escreve
+          ASR R3                ; na memoria a partir do
+          ASR R3                ; endereco 65500 apenas o byte
+          ASR R3                ; menos significativo e' escrito
+          ASR R3                ; na posicao correspondente
+          ASR R3                ; a um LED do visor
+          MOV R3,(R2)           ; move para o visor
+          SOB R0,__SEGUNDO      ; se ja moveu todo o texto,
+          RTS R7                ; retorna ao ponto de chamada
+                                ; senao, vai mover o segundo
+                                ; caractere da mesma palavra
+__SEGUNDO:
+          INC R2                ; aponta para proximo LED
+          BEQ __FIM_VISOR2      ; fim do visor - volta ao LED 00
+__CONTINUA2:
+          MOV (R1)+,R3          ; mesmos 2 caracteres em R3 e
+                                ; incrementa apontador do texto
+          MOV R3,(R2)           ; desta vez, move o segundo byte
+          SOB R0,__PROXIMO_LED  ; se ja moveu todo o texto,
+          RTS R7                ; retorna ao ponto de chamada
+__PROXIMO_LED:
+          INC R2                ; senao, aponta proximo LED
+          BNE __VOLTA_ESCR      ; e repete o laco
+                                ; fim do visor - volta ao LED 00
+__FIM_VISOR1:
+          MOV #65500,R2         ; aponta para primeiro LED
+          BR  __VOLTA_ESCR      ; volta a escrever no visor
+__FIM_VISOR2:
+          MOV #65500,R2         ; aponta para primeiro LED
+          BR  __CONTINUA2       ; volta a escrever no visor
+;>
+;>
+;> Subrotina para multiplicar 2 inteiros positivos de 16 bits
+;>
+;> Chamada da subrotina:
+;>
+;> MOV #multiplicando,R0        ; multiplicando no R0
+;> MOV #multiplicador,R1        ; multiplicador no R1
+;> JSR R7,_S_MULTIPLICAR
+;>
+;> No retorno da subrotina:
+;> - R0 cont?m os 16 msbits do produto
+;> - R1 cont?m os 16 lsbits do produto
+;> - C?digo de condi??o V:
+;>   V = 0 indica que a parte mais significativa do produto (R0) ? zero
+;>   V = 1 indica que n?o ? zero, ou seja: se for desprezada ocorre estouro
+;>
+_S_MULTIPLICAR:
+          MOV R2,-(R6)          ; salva R2 na pilha
+          MOV R3,-(R6)          ; salva R3 na pilha
+          MOV #16,R2            ; inicializa contador
+          CLR R3                ; limpa R3
+__INICIO_LACO: 
+          ROR R1                ; lsb do multiplicad. em C
+          BCC __NAO_SOMAR       ; se era zero, nao soma
+          ADD R0,R3             ; acumula multiplicando
+                                ; no produto parcial
+__NAO_SOMAR:
+          ROR R3                ; lsb de R3 vai para C
+          BCC __FIM_LACO        ; se era zero, sai do laco
+          ADD #32768,R1         ; soma 1 ao bit 15 de R1
+__FIM_LACO:
+          SOB R2,__INICIO_LACO  ; decrementa contador e
+                                ; repete se <> 0
+          MOV R3,R0             ; resultado de R3 para R0
+          MOV (R6)+,R3          ; restaura R3
+          MOV (R6)+,R2          ; restaura R2
+          TST R0                ; se R0 <> 0
+          BNE __ALERTA_ESTOURO  ; vai indicar estouro
+          CCC V                 ; senao, desliga V
+          RTS R7                ; retorna ao progr. princ.
+__ALERTA_ESTOURO:
+          SCC V                 ; liga indicador: estouro
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;>
+;> Dividir int. positivo de 32 bits por um de 16 bits
+;>
+;> Chamada da subrotina:
+;>
+;> MOV #msbitsdividendo,R0      ; 16 bits mais significativos do dividendo
+;> MOV #lsbitsdividendo,R1      ; 16 bits menos significativos do dividendo
+;> MOV #divisor,R2              ; divisor (16 bits)
+;> JSR R7,_S_DIVIDIR
+;>
+;> No retorno da subrotina:
+;> - R0 cont?m o quociente (16 bits)
+;> - R1 cont?m o resto (16 bits)
+;> - R2 ainda cont?m o divisor, inalterado (16 bits)
+;> - C?digos de condi??o:
+;>   V = 1 indica que ocorreu estouro na divis?o (quociente n?o cabe em 16 bits)
+;>   Z = 1 indica que ocorreu uma tentativa de divis?o por zero
+;>   Nestes dois casos, R0, R1 e R2 n?o s?o alterados pela subrotina
+;>
+
+_S_DIVIDIR:
+          TST R2                ; testa divisor
+          BNE __NAO_ZERO        ; se <> zero, continua
+          CCC V                 ; indica divisao por zero
+          RTS R7                ; retorna ao ponto de chamada
+
+__NAO_ZERO:
+          CMP R0,R2             ; testa se dividendo(msb)
+                                ; e' >= que o divisor
+          BCC __INDICA_ESTOURO  ; se for, indicar estouro
+                                ; note: BCC equivale a um
+                                ; BGE para int. positivos
+;>
+          MOV R3,-(R6)          ; salva R3 na pilha
+          MOV R4,-(R6)          ; salva R4 na pilha
+          MOV R5,-(R6)          ; salva R5 na pilha
+          MOV R0,R3             ; copia dividendo para
+          MOV R1,R4             ; R3 e R4 (=q no final)
+          MOV #16,R5            ; inicializa contador
+          ASL R4                ; desloca dividendo p/a
+          ROL R3                ; esquerda e abre espaco
+          BCS __SUBTRAI_DIVISOR ; p/um bit do quociente
+          CMP R3,R2             ; se n+1 msbits do divid.
+          BCS __BIT_ZERO        ; maiores que divisor (= BLT p/inteiros positivos)
+__SUBTRAI_DIVISOR:
+          SUB R2,R3             ; subtrai divisor e
+          INC R4                ; ajusta bit do quociente
+__BIT_ZERO:
+          SOB R5,16             ; decr. R5; se <>0, repete
+          MOV R3,R1             ; copia resto para R1
+          MOV R4,R0             ; copia quociente p/R0
+          MOV (R6)+,R5          ; restaura
+          MOV (R6)+,R4          ; registradores
+          MOV (R6)+,R3          ; de trabalho
+          CCC V Z               ; limpa cod. de condicao
+          RTS R7                ; retorna ao ponto de chamada
+;>
+__INDICA_ESTOURO:
+          SCC V                 ; indica overflow e nao
+          CCC Z                 ; divisao por zero
+          RTS R7                ; retorna ao ponto de chamada
+;>
+;> Identificacao da versao da biblioteca - e' exibida no visor
+;>
+          ORG 65500             ; ajusta endereco de inicio (LED 00 do visor)
+          DAB '* BibCesar.ced V. 10 -- 09/05/2011 *'
+;>
+;> A versao 9 incorporou um subrotina para preencher o visor
+;> com um mesmo caractere, cujo codigo ASCII e' passado no R2.
+;> A vers?o 10 incorporou a subrotina "ultra rapida" para limpar o visor.
+;>
